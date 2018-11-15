@@ -56,7 +56,7 @@
         (progn
           (eval
            (macroexpand
-            '(defadvice ,command (after ,ad)
+            `(defadvice ,command (after ,ad)
                (self-insert-command 0)))
           (ad-activate-regexp ad-name))))))
 
