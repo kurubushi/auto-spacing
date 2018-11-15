@@ -39,8 +39,8 @@
           (backward-char)
           (let ((c1 (char-to-string (preceding-char)))
                 (c2 (char-to-string (following-char))))
-            (message (concat "c1: " c1))
-            (message (concat "c2: " c2))
+;;            (message (concat "c1: " c1))
+;;            (message (concat "c2: " c2))
             (if (or (and (string-match auto-spacing-english-regexp c1)
                          (string-match auto-spacing-non-english-regexp c2)
                          (not (string-match auto-spacing-non-english-exception-regexp c2)))
@@ -58,7 +58,7 @@
            (macroexpand
             '(defadvice ,command (after ,ad)
                (self-insert-command 0)))
-          (ad-activate-regexp ad-name)))))
+          (ad-activate-regexp ad-name))))))
 
 (defun auto-spacing-ad-activate ()
   (mapcar 'auto-spacing-ad-activate-one
