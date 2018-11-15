@@ -54,8 +54,10 @@
          (ad (intern ad-name)))
     (if (fboundp command)
         (progn
-          (defadvice command (after ad)
-            (self-insert-command 0))
+          (eval
+           (macroexpand
+            '(defadvice ,command (after ,ad)
+               (self-insert-command 0)))
           (ad-activate-regexp ad-name)))))
 
 (defun auto-spacing-ad-activate ()
