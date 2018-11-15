@@ -101,10 +101,10 @@
   (auto-spacing-update-advice)
   (if auto-spacing-mode
       (progn
-        (add-hook 'post-self-insert-hook 'auto-spacing-insert)
+        (add-hook 'post-self-insert-hook 'auto-spacing-insert nil t)
         (auto-spacing-ad-activate))
     (progn
-      (remove-hook 'post-self-insert-hook 'auto-spacing-insert)
+      (remove-hook 'post-self-insert-hook 'auto-spacing-insert t)
       (auto-spacing-ad-deactivate))))
 
 
