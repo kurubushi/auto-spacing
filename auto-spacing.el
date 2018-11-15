@@ -27,20 +27,68 @@
   :group 'auto-spacing
   :type  'string)
 
+(defcustom auto-spacing-self-insert-command-list '(skk-insert)
+  "List of advices add self-insert-command"
+  :group 'auto-spacing
+  :type  '(list symbol))
+
 
 (defun auto-spacing-insert ()
-  (if (not (bolp))
-      (save-excursion
-        (backward-char)
-        (let ((c1 (char-to-string (preceding-char)))
-              (c2 (char-to-string (following-char))))
-          (if (or (and (string-match auto-spacing-english-regexp c1)
-                       (string-match auto-spacing-non-english-regexp c2)
-                       (not (string-match auto-spacing-non-english-exception-regexp c2)))
-                  (and (string-match auto-spacing-non-english-regexp c1)
-                       (not (string-match auto-spacing-non-english-exception-regexp c1))
-                       (string-match auto-spacing-english-regexp c2)))
-              (insert auto-spacing-separator))))))
+  (save-excursion
+    (if (not (bolp))
+        (progn
+          (backward-char)
+          (let ((c1 (char-to-string (preceding-char)))
+                (c2 (char-to-string (following-char))))
+;;            (message (concat "c1: " c1))
+;;            (message (concat "c2: " c2))
+            (if (or (and (string-match auto-spacing-english-regexp c1)
+                         (string-match auto-spacing-non-english-regexp c2)
+                         (not (string-match auto-spacing-non-english-exception-regexp c2)))
+                    (and (string-match auto-spacing-non-english-regexp c1)
+                         (not (string-match auto-spacing-non-english-exception-regexp c1))
+                         (string-match auto-spacing-english-regexp c2)))
+                (insert auto-spacing-separator)))))))
+
+(defun auto-spacing-update-advice-one (command)
+  (let* ((ad-name (concat (symbol-name command) "--self-insert-command"))
+         (ad (intern ad-name)))
+        (progn
+          (eval
+           (macroexpand
+            `(defadvice ,command (after ,ad)
+               (self-insert-command 0)))))))
+
+(defun auto-spacing-update-advice ()
+  (mapcar 'auto-spacing-update-advice-one
+          auto-spacing-self-insert-command-list))
+
+;; I don't know why the following code is wrong.
+;;(defun auto-spacing-ad-activate-one (command)
+;;  (let* ((ad-name (concat (symbol-name command) "--self-insert-command"))
+;;         (ad (intern ad-name)))
+;;        (progn
+;;          (eval
+;;           (macroexpand
+;;            `(defadvice ,command (after ,ad)
+;;               (self-insert-command 0)))
+;;          (ad-activate-regexp ad-name)))))
+
+(defun auto-spacing-ad-activate-one (command)
+  (let* ((ad-name (concat (symbol-name command) "--self-insert-command")))
+    (ad-activate-regexp ad-name)))
+
+(defun auto-spacing-ad-activate ()
+  (mapcar 'auto-spacing-ad-activate-one
+          auto-spacing-self-insert-command-list))
+
+(defun auto-spacing-ad-deactivate-one (command)
+  (let* ((ad-name (concat (symbol-name command) "--self-insert-command")))
+    (ad-deactivate-regexp ad-name)))
+
+(defun auto-spacing-ad-deactivate ()
+  (mapcar 'auto-spacing-ad-deactivate-one
+          auto-spacing-self-insert-command-list))
 
 
 (define-minor-mode auto-spacing-mode
@@ -50,17 +98,14 @@
   :init-value nil
   :lighter " AS"
 
-  ;; for skk
-  (defadvice skk-insert (after skk-insert--self-insert-command)
-    (self-insert-command 0))
-
+  (auto-spacing-update-advice)
   (if auto-spacing-mode
       (progn
         (add-hook 'post-self-insert-hook 'auto-spacing-insert)
-        (ad-activate-regexp "skk-insert--self-insert-command"))
+        (auto-spacing-ad-activate))
     (progn
       (remove-hook 'post-self-insert-hook 'auto-spacing-insert)
-      (ad-deactivate-regexp "skk-insert--self-insert-command"))))
+      (auto-spacing-ad-deactivate))))
 
 
 
