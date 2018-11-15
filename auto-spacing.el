@@ -56,10 +56,10 @@
 
   (if auto-spacing-mode
       (progn
-        (add-hook 'post-self-insert-hook 'auto-spacing-insert)
+        (add-hook 'after-change-functions 'auto-spacing-insert)
         (ad-activate-regexp "skk-insert--self-insert-command"))
     (progn
-      (remove-hook 'post-self-insert-hook 'auto-spacing-insert)
+      (remove-hook 'after-change-functions 'auto-spacing-insert)
       (ad-deactivate-regexp "skk-insert--self-insert-command"))))
 
 
