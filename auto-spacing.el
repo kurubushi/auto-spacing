@@ -27,10 +27,14 @@
   :group 'auto-spacing
   :type  'string)
 
+(defcustom auto-spacing-self-insert-command-list nil
+  "List of advices add self-insert-command"
+  :group 'auto-spacing
+  :type  '(list symbol))
 
-(defun auto-spacing-insert (beg end _len)
+
+(defun auto-spacing-insert ()
   (save-excursion
-    (goto-char end)
     (if (not (bolp))
           (backward-char)
           (let ((c1 (char-to-string (preceding-char)))
@@ -45,6 +49,41 @@
                          (string-match auto-spacing-english-regexp c2)))
                 (insert auto-spacing-separator))))))
 
+(defmacro defadvice-add-self-insert-command (name &rest body)
+  (let ((ad-name (concat (symbol-name name) "--self-insert-command")))
+    `(progn
+       (defadvice ,name (after ,(intern ad-name))
+         (self-insert-command 0))
+       (add-to-list 'advice-add-self-insert-command-list ',(intern ad-name)))))
+
+(defmacro auto-spacing-add-self-inserts-commands (&rest body)
+  `(progn
+     ,@(mapcar (lambda (name)
+                 (if (fboundp name)
+                     `(defadvice-add-self-insert-command ,name)))
+               body)))
+(setq command 'hoge-insert)
+
+(defun auto-spacing-ad-activate-one (command)
+  (let* ((ad-name (concat (symbol-name command) "--self-insert-command"))
+         (ad (intern ad-name)))
+    (if (fboundp command)
+        (progn
+          (defadvice command (after ad)
+            (self-insert-command 0))
+          (ad-activate-regexp ad-name)))))
+
+(defun auto-spacing-ad-activate ()
+  (mapcar 'auto-spacing-ad-activate-one
+          auto-spacing-self-insert-command-list))
+
+(defun auto-spacing-ad-deactivate-one (command)
+  (let* ((ad-name (concat (symbol-name command) "--self-insert-command")))
+    (ad-deactivate-regexp ad-name)))
+
+(defun auto-spacing-ad-deactivate ()
+  (mapcar 'auto-spacing-ad-deactivate-one
+          auto-spacing-self-insert-command-list))
 
 (define-minor-mode auto-spacing-mode
   "Toggle auto-spacing-mode"
@@ -53,19 +92,13 @@
   :init-value nil
   :lighter " AS"
 
-  ;; for skk
-  (defadvice skk-insert (after skk-insert--self-insert-command)
-    (self-insert-command 0))
-
   (if auto-spacing-mode
       (progn
         (add-hook 'post-self-insert-hook 'auto-spacing-insert)
-;;        (add-hook 'after-change-functions 'auto-spacing-insert)
-        (ad-activate-regexp "skk-insert--self-insert-command"))
+        (auto-spacing-ad-activate))
     (progn
       (remove-hook 'post-self-insert-hook 'auto-spacing-insert)
-;;      (remove-hook 'after-change-functions 'auto-spacing-insert)
-      (ad-deactivate-regexp "skk-insert--self-insert-command"))))
+      (auto-spacing-ad-deactivate))))
 
 
 
