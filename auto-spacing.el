@@ -27,7 +27,7 @@
   :group 'auto-spacing
   :type  'string)
 
-(defcustom auto-spacing-self-insert-command-list nil
+(defcustom auto-spacing-self-insert-command-list '(skk-insert)
   "List of advices add self-insert-command"
   :group 'auto-spacing
   :type  '(list symbol))
@@ -50,16 +50,33 @@
                          (string-match auto-spacing-english-regexp c2)))
                 (insert auto-spacing-separator)))))))
 
-(defun auto-spacing-ad-activate-one (command)
+(defun auto-spacing-update-advice-one (command)
   (let* ((ad-name (concat (symbol-name command) "--self-insert-command"))
          (ad (intern ad-name)))
-    (if (fboundp command)
         (progn
           (eval
            (macroexpand
             `(defadvice ,command (after ,ad)
-               (self-insert-command 0)))
-          (ad-activate-regexp ad-name))))))
+               (self-insert-command 0)))))))
+
+(defun auto-spacing-update-advice ()
+  (mapcar 'auto-spacing-update-advice-one
+          auto-spacing-self-insert-command-list))
+
+;; I don't know why the following code is wrong.
+;;(defun auto-spacing-ad-activate-one (command)
+;;  (let* ((ad-name (concat (symbol-name command) "--self-insert-command"))
+;;         (ad (intern ad-name)))
+;;        (progn
+;;          (eval
+;;           (macroexpand
+;;            `(defadvice ,command (after ,ad)
+;;               (self-insert-command 0)))
+;;          (ad-activate-regexp ad-name)))))
+
+(defun auto-spacing-ad-activate-one (command)
+  (let* ((ad-name (concat (symbol-name command) "--self-insert-command")))
+    (ad-activate-regexp ad-name)))
 
 (defun auto-spacing-ad-activate ()
   (mapcar 'auto-spacing-ad-activate-one
@@ -81,13 +98,14 @@
   :init-value nil
   :lighter " AS"
 
+  (auto-spacing-update-advice)
   (if auto-spacing-mode
       (progn
-        (auto-spacing-ad-activate)
-        (add-hook 'post-self-insert-hook 'auto-spacing-insert))
+        (add-hook 'post-self-insert-hook 'auto-spacing-insert)
+        (auto-spacing-ad-activate))
     (progn
-      (auto-spacing-ad-deactivate)
-      (remove-hook 'post-self-insert-hook 'auto-spacing-insert))))
+      (remove-hook 'post-self-insert-hook 'auto-spacing-insert)
+      (auto-spacing-ad-deactivate))))
 
 
 
