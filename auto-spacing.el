@@ -83,11 +83,11 @@
 
   (if auto-spacing-mode
       (progn
-        (add-hook 'post-self-insert-hook 'auto-spacing-insert)
-        (auto-spacing-ad-activate))
+        (auto-spacing-ad-activate)
+        (add-hook 'post-self-insert-hook 'auto-spacing-insert))
     (progn
-      (remove-hook 'post-self-insert-hook 'auto-spacing-insert)
-      (auto-spacing-ad-deactivate))))
+      (auto-spacing-ad-deactivate)
+      (remove-hook 'post-self-insert-hook 'auto-spacing-insert))))
 
 
 
