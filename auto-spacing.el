@@ -35,6 +35,8 @@
           (backward-char)
           (let ((c1 (char-to-string (preceding-char)))
                 (c2 (char-to-string (following-char))))
+;;            (message (concat "c1: " c1))
+;;            (message (concat "c2: " c2))
             (if (or (and (string-match auto-spacing-english-regexp c1)
                          (string-match auto-spacing-non-english-regexp c2)
                          (not (string-match auto-spacing-non-english-exception-regexp c2)))
@@ -57,10 +59,12 @@
 
   (if auto-spacing-mode
       (progn
-        (add-hook 'after-change-functions 'auto-spacing-insert)
+        (add-hook 'post-self-insert-hook 'auto-spacing-insert)
+;;        (add-hook 'after-change-functions 'auto-spacing-insert)
         (ad-activate-regexp "skk-insert--self-insert-command"))
     (progn
-      (remove-hook 'after-change-functions 'auto-spacing-insert)
+      (remove-hook 'post-self-insert-hook 'auto-spacing-insert)
+;;      (remove-hook 'after-change-functions 'auto-spacing-insert)
       (ad-deactivate-regexp "skk-insert--self-insert-command"))))
 
 
