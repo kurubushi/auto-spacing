@@ -28,19 +28,20 @@
   :type  'string)
 
 
-(defun auto-spacing-insert ()
-  (if (not (bolp))
-      (save-excursion
-        (backward-char)
-        (let ((c1 (char-to-string (preceding-char)))
-              (c2 (char-to-string (following-char))))
-          (if (or (and (string-match auto-spacing-english-regexp c1)
-                       (string-match auto-spacing-non-english-regexp c2)
-                       (not (string-match auto-spacing-non-english-exception-regexp c2)))
-                  (and (string-match auto-spacing-non-english-regexp c1)
-                       (not (string-match auto-spacing-non-english-exception-regexp c1))
-                       (string-match auto-spacing-english-regexp c2)))
-              (insert auto-spacing-separator))))))
+(defun auto-spacing-insert (beg end _len)
+  (save-excursion
+    (goto-char end)
+    (if (not (bolp))
+          (backward-char)
+          (let ((c1 (char-to-string (preceding-char)))
+                (c2 (char-to-string (following-char))))
+            (if (or (and (string-match auto-spacing-english-regexp c1)
+                         (string-match auto-spacing-non-english-regexp c2)
+                         (not (string-match auto-spacing-non-english-exception-regexp c2)))
+                    (and (string-match auto-spacing-non-english-regexp c1)
+                         (not (string-match auto-spacing-non-english-exception-regexp c1))
+                         (string-match auto-spacing-english-regexp c2)))
+                (insert auto-spacing-separator))))))
 
 
 (define-minor-mode auto-spacing-mode
