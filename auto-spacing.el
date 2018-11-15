@@ -39,8 +39,8 @@
           (backward-char)
           (let ((c1 (char-to-string (preceding-char)))
                 (c2 (char-to-string (following-char))))
-;;            (message (concat "c1: " c1))
-;;            (message (concat "c2: " c2))
+            (message (concat "c1: " c1))
+            (message (concat "c2: " c2))
             (if (or (and (string-match auto-spacing-english-regexp c1)
                          (string-match auto-spacing-non-english-regexp c2)
                          (not (string-match auto-spacing-non-english-exception-regexp c2)))
@@ -48,21 +48,6 @@
                          (not (string-match auto-spacing-non-english-exception-regexp c1))
                          (string-match auto-spacing-english-regexp c2)))
                 (insert auto-spacing-separator))))))
-
-(defmacro defadvice-add-self-insert-command (name &rest body)
-  (let ((ad-name (concat (symbol-name name) "--self-insert-command")))
-    `(progn
-       (defadvice ,name (after ,(intern ad-name))
-         (self-insert-command 0))
-       (add-to-list 'advice-add-self-insert-command-list ',(intern ad-name)))))
-
-(defmacro auto-spacing-add-self-inserts-commands (&rest body)
-  `(progn
-     ,@(mapcar (lambda (name)
-                 (if (fboundp name)
-                     `(defadvice-add-self-insert-command ,name)))
-               body)))
-(setq command 'hoge-insert)
 
 (defun auto-spacing-ad-activate-one (command)
   (let* ((ad-name (concat (symbol-name command) "--self-insert-command"))
@@ -84,6 +69,7 @@
 (defun auto-spacing-ad-deactivate ()
   (mapcar 'auto-spacing-ad-deactivate-one
           auto-spacing-self-insert-command-list))
+
 
 (define-minor-mode auto-spacing-mode
   "Toggle auto-spacing-mode"
