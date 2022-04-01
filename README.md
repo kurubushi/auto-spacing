@@ -7,14 +7,23 @@
 ## 使い方
 
 ```elisp
-(el-get-bundle auto-spacing
-  :type    github
-  :pkgname "kurubushi/auto-spacing")
-(auto-spacing-mode t)
+(require 'use-package)
+(require 'quelpa-use-package)
+
+(use-package auto-spacing
+  :quelpa (auto-spacing :fetcher github :repo "kurubushi/auto-spacing")
+  :custom
+  ;; where to insert a space
+  (auto-spacing-english-regexp (rx (in "a-zA-Z0-9$.`")))
+  ;; add insert functions
+  (auto-spacing-self-insert-command-list '(skk-insert
+                                           TeX-insert-dollar))
+  :config
+  (auto-spacing-mode))
 ```
 
 TeX mode で $ と日本語の間にスペースを追加しようとする場合，
-$ の入力は `TeX-insert-dollar` 関数を経由して行われるため，
+`$` の入力は `TeX-insert-dollar` 関数を経由して行われるため，
 これを `auto-spacing-self-insert-command-list` に追加する．
 
 ```elisp
